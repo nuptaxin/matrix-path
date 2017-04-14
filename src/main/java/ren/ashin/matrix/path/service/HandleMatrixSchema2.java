@@ -1,16 +1,14 @@
 package ren.ashin.matrix.path.service;
 
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-
-import org.apache.commons.lang.StringUtils;
+import java.util.Map;
 
 import ren.ashin.matrix.path.bean.Node;
+import ren.ashin.matrix.path.bean.TmpLinkNode;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Table;
 
 /**
@@ -22,7 +20,7 @@ import com.google.common.collect.Table;
 public class HandleMatrixSchema2 {
 
     Table<Integer, Integer, Node> nodeTable = HashBasedTable.create();
-    int i = 0;
+    List<TmpLinkNode> tmpLinkNodeList = Lists.newLinkedList();
 
     public void handle(final int size, List<List<Node>> manuNodeList) {
 
@@ -30,54 +28,69 @@ public class HandleMatrixSchema2 {
 
         createMatrix(nodeList, nodeTable, size);
 
+        // 将传入的manuNodeList 转换为当前构造的matrix
+        List<List<Node>> newManuNodeList = Lists.newLinkedList();
+        for (List<Node> nodeLists : manuNodeList) {
+            List<Node> newNodeLists = Lists.newLinkedList();
+            newManuNodeList.add(newNodeLists);
+            for (Node node : nodeLists) {
+                Node newNode = nodeTable.get(node.getX(), node.getY());
+                newNodeLists.add(newNode);
+            }
+        }
+        manuNodeList = newManuNodeList;
+
+
+        // 组一个Map，key是当前的首节点，Value为next的首末节点
+        Map<Node, List<Node>> nodeNextMap = Maps.newHashMap();
+        Node currentNode = null;
+
         List<Node> manuAllNodeList = Lists.newLinkedList();
         for (List<Node> coupleNodeList : manuNodeList) {
+            if (currentNode != null) {
+                nodeNextMap.put(currentNode, coupleNodeList);
+            }
+            currentNode = coupleNodeList.get(0);
             for (Node node : coupleNodeList) {
                 manuAllNodeList.add(node);
             }
-
         }
+        nodeNextMap.put(currentNode, null);
+
         for (List<Node> coupleNodes : manuNodeList) {
-            Node manuStartNode = coupleNodes.get(0);
-            Node manuEndNode = coupleNodes.get(1);
-            Node startNode = nodeTable.get(manuStartNode.getX(), manuStartNode.getY());
-            Node endNode = nodeTable.get(manuEndNode.getX(), manuEndNode.getY());
-
-            List<Node> delNodeList1 = Lists.newLinkedList();
-            for (Node node : manuAllNodeList) {
-                if (!node.equals(manuStartNode) && !node.equals(manuEndNode)) {
-                    Node invalidNode = nodeTable.get(node.getX(), node.getY());
-                    delNodeList1.add(invalidNode);
-                }
+            TmpLinkNode tmp = new TmpLinkNode();
+            tmp.setStartNode(coupleNodes.get(0));
+            tmp.setEndNode(coupleNodes.get(1));
+            List<Node> coupleNodeList = nodeNextMap.get(coupleNodes.get(0));
+            if (coupleNodeList != null) {
+                tmp.setNextStartNode(coupleNodeList.get(0));
+                tmp.setNextEndNode(coupleNodeList.get(1));
             }
-            List<List<Node>> allValidPath1 =
-                    getAllPathList(nodeList, startNode, endNode, delNodeList1);
-            // 打印所有的路径
+            List<Node> theManuAllNodeList = Lists.newLinkedList(manuAllNodeList);
+            theManuAllNodeList.remove(coupleNodes.get(1));
+            tmp.setDelNodeList(theManuAllNodeList);
+            tmpLinkNodeList.add(tmp);
 
-            for (List<Node> list : allValidPath1) {
-                if (list.size() == size * size) {
-                    System.out.print("路径：");
-                    for (Node node : list) {
-                        System.out.print("(" + node.getX() + "," + node.getY() + ")");
-                    }
-                    System.out.println("");
+        }
+        Node manuStartNode = tmpLinkNodeList.get(0).getStartNode();
+        Node manuEndNode = tmpLinkNodeList.get(0).getEndNode();
+        Node startNode = nodeTable.get(manuStartNode.getX(), manuStartNode.getY());
+        Node endNode = nodeTable.get(manuEndNode.getX(), manuEndNode.getY());
+
+        List<Node> delNodeList1 = Lists.newLinkedList();
+        List<List<Node>> allValidPath1 = getAllPathList(nodeList, startNode, endNode, delNodeList1);
+        // 打印所有的路径
+
+        for (List<Node> list : allValidPath1) {
+            if (list.size() == size * size) {
+                System.out.print("路径：");
+                for (Node node : list) {
+                    System.out.print("(" + node.getX() + "," + node.getY() + ")");
                 }
+                System.out.println("");
             }
-            break;
         }
 
-
-        // 查找所有加和为size*size的组合
-        ExecutorService fixedThreadPool = Executors.newFixedThreadPool(100);
-        int i = 0;
-
-        fixedThreadPool.shutdown();
-        try {
-            fixedThreadPool.awaitTermination(1, TimeUnit.HOURS);
-        } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
     }
 
     private void createMatrix(List<Node> nodeList, Table<Integer, Integer, Node> nodeTable, int size) {
@@ -115,9 +128,8 @@ public class HandleMatrixSchema2 {
 
     private List<List<Node>> getAllPathList(List<Node> nodeList, Node node, Node node2,
             List<Node> delNodes) {
-        List<Node> delNodeList = Lists.newLinkedList();
+        List<Node> delNodeList = Lists.newLinkedList(delNodes);
         delNodeList.add(node);
-        delNodeList.addAll(delNodes);
 
         List<List<Node>> allValidPath = Lists.newLinkedList();
         List<Node> currentPath = Lists.newLinkedList();
@@ -130,51 +142,31 @@ public class HandleMatrixSchema2 {
             Node currentNode, Node endNode, List<Node> delNodeList) {
         List<Node> theCurrentPath = Lists.newLinkedList(currentPath);
         theCurrentPath.add(currentNode);
-        if (currentNode.equals(nodeTable.get(7, 0))) {
-            // System.out.println(StringUtils.join(theCurrentPath.toArray(), ","));
-            // 继续查找第二组节点
-            List<Node> theDelNodeList = Lists.newLinkedList(theCurrentPath);
-            theDelNodeList.add(nodeTable.get(1, 1));
-            theDelNodeList.add(nodeTable.get(2, 4));
-            theDelNodeList.add(nodeTable.get(6, 0));
-            theDelNodeList.add(nodeTable.get(3, 2));
-            theDelNodeList.add(nodeTable.get(5, 5));
-            findNextPath(allValidPath, theCurrentPath, nodeTable.get(1, 1), nodeTable.get(2, 5),
-                    theDelNodeList);
-            // System.out.println("继续查找第二组节点结束"+i++);
-            return;
-        }
-        if (currentNode.equals(nodeTable.get(2, 5))) {
-            // 继续查找第三组节点
-            List<Node> theDelNodeList = Lists.newLinkedList(theCurrentPath);
-            theDelNodeList.add(nodeTable.get(2, 4));
-            theDelNodeList.add(nodeTable.get(3, 2));
-            theDelNodeList.add(nodeTable.get(5, 5));
-            findNextPath(allValidPath, theCurrentPath, nodeTable.get(2, 4), nodeTable.get(6, 0),
-                    theDelNodeList);
-            // System.out.println("继续查找第3组节点结束");
-            return;
-        }
-        if (currentNode.equals(nodeTable.get(6, 0))) {
-            // 继续查找第四组节点
-            List<Node> theDelNodeList = Lists.newLinkedList(theCurrentPath);
-            theDelNodeList.add(nodeTable.get(3, 2));
-            findNextPath(allValidPath, theCurrentPath, nodeTable.get(3, 2), nodeTable.get(5, 5),
-                    theDelNodeList);
-            // System.out.println("继续查找第4组节点结束");
-            return;
-        }
-        if (currentNode.equals(nodeTable.get(5, 5))) {
-            // 结束遍历
-            allValidPath.add(theCurrentPath);
-            // System.out.println("找到路径");
-            return;
+        for (TmpLinkNode tmpNode : tmpLinkNodeList) {
+            if (currentNode.equals(tmpNode.getStartNode())) {
+                // 如果是第一个节点，那么把该节点的delNodeList加进去
+                delNodeList.addAll(tmpNode.getDelNodeList());
+            }
+
+            if (currentNode.equals(tmpNode.getEndNode())) {
+                // System.out.println(StringUtils.join(theCurrentPath.toArray(), ","));
+                // 继续查找第二组节点
+                if (tmpNode.getNextStartNode() == null) {
+                    allValidPath.add(theCurrentPath);
+                } else {
+                    List<Node> theDelNodeList = Lists.newLinkedList(theCurrentPath);
+                    theDelNodeList.add(currentNode);
+                    theDelNodeList.remove(tmpNode.getNextEndNode());
+                    findNextPath(allValidPath, theCurrentPath, tmpNode.getNextStartNode(),
+                            tmpNode.getNextEndNode(), theDelNodeList);
+                }
+                return;
+            }
         }
         List<Node> nextNodes = findNextNode(currentNode, delNodeList);
         if (nextNodes.size() == 0) {
             return;
         }
-
         for (Node node : nextNodes) {
             List<Node> theDelNodeList = Lists.newLinkedList(delNodeList);
             theDelNodeList.add(node);
