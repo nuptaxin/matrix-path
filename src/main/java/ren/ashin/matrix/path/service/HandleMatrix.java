@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -42,7 +43,6 @@ public class HandleMatrix {
         Multimap<Integer, List<Node>> multimap2 = ArrayListMultimap.create();
         Multimap<Integer, List<Node>> multimap3 = ArrayListMultimap.create();
         Multimap<Integer, List<Node>> multimap4 = ArrayListMultimap.create();
-
         for (List<Node> coupleNodes : manuNodeList) {
             Node manuStartNode = coupleNodes.get(0);
             Node manuEndNode = coupleNodes.get(1);
@@ -59,30 +59,46 @@ public class HandleMatrix {
             List<List<Node>> allValidPath1 =
                     getAllPathList(nodeList, startNode, endNode, delNodeList1);
             // 打印所有的路径
-            for (List<Node> validNodeList : allValidPath1) {
 
-                // System.out.print("路径：");
-                // for (Node node : validNodeList) {
-                // System.out.print("(" + node.getX() + "," + node.getY() + ")");
-                // }
-                // System.out.println("");
-                if (multimap1.size() == 0) {
+
+            // System.out.print("路径：");
+            // for (Node node : validNodeList) {
+            // System.out.print("(" + node.getX() + "," + node.getY() + ")");
+            // }
+            // System.out.println("");
+            if (multimap1.size() == 0) {
+                for (List<Node> validNodeList : allValidPath1) {
                     multimap1.put(validNodeList.size(), validNodeList);
-                } else if (multimap1.size() > 0) {
+                }
+                System.out.println("路径个数：" + allValidPath1.size() + ";路径长度种类："
+                        + multimap1.keySet().size() + ",分别为:"
+                        + StringUtils.join(multimap1.keySet().toArray(), ","));
+            } else if (multimap1.size() > 0 && multimap2.size() == 0) {
+                for (List<Node> validNodeList : allValidPath1) {
                     multimap2.put(validNodeList.size(), validNodeList);
                 }
-                else if (multimap2.size() > 0) {
+                System.out.println("路径个数：" + allValidPath1.size() + ";路径长度种类："
+                        + multimap2.keySet().size() + ",分别为:"
+                        + StringUtils.join(multimap2.keySet().toArray(), ","));
+            } else if (multimap2.size() > 0 && multimap3.size() == 0) {
+                for (List<Node> validNodeList : allValidPath1) {
                     multimap3.put(validNodeList.size(), validNodeList);
                 }
-                else if (multimap3.size() > 0) {
+                System.out.println("路径个数：" + allValidPath1.size() + ";路径长度种类："
+                        + multimap3.keySet().size() + ",分别为:"
+                        + StringUtils.join(multimap3.keySet().toArray(), ","));
+            } else if (multimap3.size() > 0 && multimap4.size() == 0) {
+                for (List<Node> validNodeList : allValidPath1) {
                     multimap4.put(validNodeList.size(), validNodeList);
                 }
-
+                System.out.println("路径个数：" + allValidPath1.size() + ";路径长度种类："
+                        + multimap4.keySet().size() + ",分别为:"
+                        + StringUtils.join(multimap4.keySet().toArray(), ","));
             }
-            System.out.println("路径个数：" + allValidPath1.size() + ";路径长度种类："
-                    + multimap1.keySet().size() + ",分别为:"
-                    + StringUtils.join(multimap1.keySet().toArray(), ","));
+
+
         }
+
 
         // 查找所有加和为size*size的组合
         ExecutorService fixedThreadPool = Executors.newFixedThreadPool(100);
@@ -165,6 +181,14 @@ public class HandleMatrix {
                 }
             }
 
+        }
+
+        fixedThreadPool.shutdown();
+        try {
+            fixedThreadPool.awaitTermination(1, TimeUnit.HOURS);
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
     }
 
