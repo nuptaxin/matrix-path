@@ -45,4 +45,9 @@ public class Node {
         this.nextNodeList = nextNodeList;
     }
 
+    @Override
+    public String toString() {
+        return "Node [x=" + x + ", y=" + y + "]";
+    }
+
 }

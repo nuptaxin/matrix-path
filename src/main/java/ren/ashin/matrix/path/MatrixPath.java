@@ -10,6 +10,7 @@ import org.joda.time.DateTime;
 
 import ren.ashin.matrix.path.bean.Node;
 import ren.ashin.matrix.path.service.HandleMatrix;
+import ren.ashin.matrix.path.service.HandleMatrixSchema2;
 import ren.ashin.matrix.path.util.MainConfig;
 
 import com.google.common.collect.Lists;
@@ -56,8 +57,14 @@ public class MatrixPath {
             System.exit(0);
         }
 
-        HandleMatrix handleMatrix = new HandleMatrix();
-        handleMatrix.handle(size, manuNodeList);
+        if (mfg.AlgorithmSchema() == 1) {
+            HandleMatrix handleMatrix = new HandleMatrix();
+            handleMatrix.handle(size, manuNodeList);
+        } else if (mfg.AlgorithmSchema() == 2) {
+            HandleMatrixSchema2 handleMatrix = new HandleMatrixSchema2();
+            handleMatrix.handle(size, manuNodeList);
+        }
+
         LOG.info("程序结束运行时间：" + DateTime.now());
     }
 }
