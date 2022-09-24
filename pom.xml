@@ -46,7 +46,7 @@
 		<dependency>
 			<groupId>org.sql2o</groupId>
 			<artifactId>sql2o</artifactId>
-			<version>1.2.1.2</version>
+			<version>1.6.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.quartz-scheduler</groupId>
@@ -116,11 +116,11 @@
 					</execution>
 				</executions>
 			</plugin>
-			<plugin>
+			<!--<plugin>
 				<artifactId>maven-antrun-plugin</artifactId>
 
 				<executions>
-					<!-- getVersion -->
+					&lt;!&ndash; getVersion &ndash;&gt;
 					<execution>
 						<id>getVersion</id>
 						<phase>install</phase>
@@ -149,7 +149,7 @@
 						</configuration>
 					</execution>
 
-					<!-- deleteSource -->
+					&lt;!&ndash; deleteSource &ndash;&gt;
 					<execution>
 						<id>deleteSource</id>
 						<phase>install</phase>
@@ -174,7 +174,7 @@
 						</configuration>
 					</execution>
 
-					<!-- clean -->
+					&lt;!&ndash; clean &ndash;&gt;
 					<execution>
 						<id>clean</id>
 						<phase>clean</phase>
@@ -217,7 +217,7 @@
 						<version>1.7.8</version>
 					</dependency>
 				</dependencies>
-			</plugin>
+			</plugin>-->
 			<plugin>
 				<artifactId>maven-jar-plugin</artifactId>
 				<version>2.4</version>
