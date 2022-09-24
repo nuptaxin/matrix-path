@@ -81,8 +81,10 @@ public class HandleMatrixSchema2 {
         List<List<Node>> allValidPath1 = getAllPathList(nodeList, startNode, endNode, delNodeList1);
         // 打印所有的路径
 
+        boolean hasValidPath = false;
         for (List<Node> list : allValidPath1) {
             if (list.size() == size * size) {
+                hasValidPath = true;
                 System.out.print("路径：");
                 for (Node node : list) {
                     System.out.print("(" + node.getX() + "," + node.getY() + ")");
@@ -90,7 +92,9 @@ public class HandleMatrixSchema2 {
                 System.out.println("");
             }
         }
-
+        if(!hasValidPath) {
+            System.out.println("未找到有效路径");
+        }
     }
 
     private void createMatrix(List<Node> nodeList, Table<Integer, Integer, Node> nodeTable, int size) {
