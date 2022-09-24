@@ -57,10 +57,10 @@ public class MatrixPath {
             System.exit(0);
         }
 
-        if (mfg.AlgorithmSchema() == 1) {
+        if (mfg.algorithmSchema() == 1) {
             HandleMatrix handleMatrix = new HandleMatrix();
             handleMatrix.handle(size, manuNodeList);
-        } else if (mfg.AlgorithmSchema() == 2) {
+        } else if (mfg.algorithmSchema() == 2) {
             HandleMatrixSchema2 handleMatrix = new HandleMatrixSchema2();
             handleMatrix.handle(size, manuNodeList);
         }

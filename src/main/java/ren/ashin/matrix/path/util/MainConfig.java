@@ -13,5 +13,5 @@ public interface MainConfig extends Mutable {
     String nodes();
     
     @Key("AlgorithmSchema")
-    int AlgorithmSchema();
+    int algorithmSchema();
 }
